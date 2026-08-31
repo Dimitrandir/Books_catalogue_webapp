@@ -118,3 +118,45 @@
 - R2/Anthropic API credentials в `.env` са все още празни — не е нужно
   докато не стигнем до upload на корици (стъпка 6) и scanner app
   (стъпка 7).
+
+---
+
+## 2026-08-31 (продължение 2)
+
+**Свършено:**
+- Оправен `CLAUDE.md`, който на диска се беше объркал форматирано (headers/
+  code fences/списъци бяха сплескани в plain text с накъсани line breaks) —
+  съдържанието е същото, само маркдаунът е възстановен. Добавена е и нова
+  секция "Стил на общуване" от потребителя: отговори кратко и по същество,
+  без излишни любезности.
+- `catalog/models.py`: добавени всички справочни модели (`Author`, `Genre`,
+  `Publisher`, `Location`, `Condition` — с `unique=True` на `name` и
+  подредба по `name`), плюс `Book` (M2M към `Author`/`Genre`, FK към
+  `Publisher` nullable, `cover_image` ImageField nullable/blank за upload
+  по-късно) и `Copy` (FK към `Book`/`Location`/`Condition`, `condition`
+  default през `default_condition()` — `get_or_create(name='Добро')`, т.е.
+  сочи по `name`, не по твърд `pk`, както изисква `docs/DATA_MODEL.md`).
+- `catalog/admin.py`: регистрирани всички модели — общ `ReferenceAdmin` за
+  петте справочни модела, `BookAdmin` с `filter_horizontal` за M2M-нетата и
+  inline за `Copy`, отделен `CopyAdmin`.
+- `makemigrations catalog` → прегледана `0001_initial.py` преди `migrate`
+  (следвайки конвенцията в `CLAUDE.md`) → приложена към `family_library`.
+- Sanity-test през `manage.py shell`: създадени и изтрити тестови Author/
+  Book/Location/Copy записи, потвърдено че `Copy.condition` default пада
+  на "Добро" правилно.
+
+**Текущо състояние:**
+- `catalog` app вече има пълния набор модели от `docs/DATA_MODEL.md` (без
+  `Person`/`Loan`, които са в бъдещия `loans` app). Admin интерфейсът е
+  напълно функционален за тях.
+- Все още няма custom views/templates — само Django admin.
+
+**Следваща стъпка:**
+- Точка от плана: `loans` app models (`Person`, `Loan`) + admin
+  регистрация, по `docs/DATA_MODEL.md`.
+- След това: основни custom изгледи (списък с книги, детайли, търсене/
+  филтриране) — точка 4 от "Ред на разработка" в `CLAUDE.md`.
+
+**Отворени въпроси / бележки:**
+- Не е създаден Django superuser все още — ще трябва за реален достъп до
+  `/admin/` (`python manage.py createsuperuser`).
