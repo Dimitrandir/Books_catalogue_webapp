@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Книги — Семейна библиотека{% endblock %}
+
+{% block content %}
+    <form class="filters" hx-get="{% url 'catalog:book_list' %}" hx-target="#book-results"
+          hx-select="#book-results" hx-swap="outerHTML" hx-push-url="true">
+        <input type="text" name="q" placeholder="Търсене по заглавие, автор, резюме…" value="{{ query }}">
+
+        <select name="genre">
+            <option value="">Всички жанрове</option>
+            {% for genre in genres %}
+                <option value="{{ genre.pk }}" {% if selected.genre == genre.pk|stringformat:"s" %}selected{% endif %}>{{ genre.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="author">
+            <option value="">Всички автори</option>
+            {% for author in authors %}
+                <option value="{{ author.pk }}" {% if selected.author == author.pk|stringformat:"s" %}selected{% endif %}>{{ author.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="publisher">
+            <option value="">Всички издателства</option>
+            {% for publisher in publishers %}
+                <option value="{{ publisher.pk }}" {% if selected.publisher == publisher.pk|stringformat:"s" %}selected{% endif %}>{{ publisher.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="location">
+            <option value="">Всички локации</option>
+            {% for location in locations %}
+                <option value="{{ location.pk }}" {% if selected.location == location.pk|stringformat:"s" %}selected{% endif %}>{{ location.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="availability">
+            <option value="">Наличност: всички</option>
+            <option value="available" {% if selected.availability == "available" %}selected{% endif %}>На място</option>
+            <option value="on_loan" {% if selected.availability == "on_loan" %}selected{% endif %}>Дадени на заем</option>
+        </select>
+
+        <button type="submit">Търсене</button>
+    </form>
+
+    {% include "catalog/_book_results.html" %}
+{% endblock %}

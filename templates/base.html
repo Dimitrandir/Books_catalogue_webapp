@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Семейна библиотека{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <style>
+        :root {
+            --border: #ddd;
+            --muted: #666;
+            --accent: #2f5d50;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            color: #1a1a1a;
+            background: #fafafa;
+        }
+        header {
+            background: var(--accent);
+            color: white;
+            padding: 1rem 1.5rem;
+        }
+        header a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .filters input, .filters select {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+        .filters input[type="text"] { flex: 1 1 200px; }
+        .filters button {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+        }
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+        .book-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+        .book-card img, .book-card .no-cover {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .book-card .title { font-weight: 600; font-size: 0.95rem; }
+        .book-card .authors { color: var(--muted); font-size: 0.85rem; }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            margin-top: 0.35rem;
+        }
+        .badge.available { background: #e3f3ea; color: #1e6b45; }
+        .badge.on-loan { background: #fbeaea; color: #a13b3b; }
+        .pagination { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
+        .pagination a, .pagination span {
+            padding: 0.3rem 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            text-decoration: none;
+            color: inherit;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--border); }
+        .back-link { display: inline-block; margin-bottom: 1rem; color: var(--accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{% url 'catalog:book_list' %}">📚 Семейна библиотека</a>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

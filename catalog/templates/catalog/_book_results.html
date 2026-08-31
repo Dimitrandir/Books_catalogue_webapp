@@ -1,0 +1,32 @@
+<div id="book-results">
+    {% if page_obj %}
+        <div class="book-grid">
+            {% for book in page_obj %}
+                <a class="book-card" href="{% url 'catalog:book_detail' book.pk %}">
+                    {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}">
+                    {% else %}
+                        <div class="no-cover">няма корица</div>
+                    {% endif %}
+                    <span class="title">{{ book.title }}</span>
+                    <span class="authors">{{ book.authors.all|join:", " }}</span>
+                </a>
+            {% endfor %}
+        </div>
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?{{ querystring }}&page={{ page_obj.previous_page_number }}"
+                   hx-get="?{{ querystring }}&page={{ page_obj.previous_page_number }}"
+                   hx-target="#book-results" hx-select="#book-results" hx-swap="outerHTML" hx-push-url="true">← предишна</a>
+            {% endif %}
+            <span>стр. {{ page_obj.number }} от {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?{{ querystring }}&page={{ page_obj.next_page_number }}"
+                   hx-get="?{{ querystring }}&page={{ page_obj.next_page_number }}"
+                   hx-target="#book-results" hx-select="#book-results" hx-swap="outerHTML" hx-push-url="true">следваща →</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>Няма намерени книги.</p>
+    {% endif %}
+</div>
