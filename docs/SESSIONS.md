@@ -252,3 +252,57 @@
 **Отворени въпроси / бележки:**
 - Все още няма реални данни в базата (само схемата) — потребителят ще
   въвежда истинските книги/локации/хора през admin.
+
+---
+
+## 2026-08-31 (продължение 5)
+
+**Свършено:**
+- Точка 5 от плана: UI за заемане/връщане на книга, вграден в
+  `book_detail`:
+  - `loans/forms.py`: `LendForm` (ModelForm за `Loan`, полета `person` +
+    `date_given` с `<input type="date">`, default = днес).
+  - `loans/views.py`: `lend_copy(copy_id)` — ако `Copy` няма отворен заем,
+    създава нов `Loan`; `return_loan(loan_id)` — сетва `date_returned` на
+    текущия отворен `Loan`. И двата `@require_POST`, връщат само
+    обновения `<tr>` (`catalog/_copy_row.html`).
+  - `catalog/_copy_row.html` нов partial (споделен между `book_detail` и
+    loans views) — показва локация/състояние/статус + inline форма
+    (lend или "Върни" бутон, в зависимост от статуса) + история.
+  - `loans/urls.py` нов, включен в `config/urls.py`.
+  - HTMX: формите правят `hx-post` с `hx-target="#copy-row-{pk}"` и
+    `hx-swap="outerHTML"` — редът се обновява без пълен reload.
+- Открит и оправен бъг по време на ръчното тестване: `prefetch_related`
+  на `copy.loans` в `_copy_with_current_loan` кешираше историята на
+  заемания ПРЕДИ да се създаде новият `Loan`, така че току-що създаденият
+  запис не се появяваше в историята веднага след lend action (показваше
+  "—" вместо реалния запис). Оправено чрез премахване на prefetch-а за
+  single-copy заявките — приемливо на този мащаб (семейна библиотека,
+  не хиляди records).
+- Ръчно тествано в браузър с временни seed данни: lend → return → lend
+  отново с друг човек; потвърдено през network requests, че всичко минава
+  през HTMX ajax (не full page navigation), и че историята се натрупва
+  правилно с най-новия запис най-отгоре (`Loan.Meta.ordering = ['-date_given']`).
+  Seed данните изтрити след теста.
+
+**Текущо състояние:**
+- Пълен CRUD + бизнес flow вече работи през custom UI: преглед, търсене,
+  филтриране, заемане, връщане. Django admin остава за managing на
+  справочните модели (Author/Genre/Publisher/Location/Condition/Person)
+  и bulk редакция.
+- Дизайнът е все още само функционален inline CSS — истинският визуален
+  дизайн предстои по-късно (frontend-design skill, per CLAUDE.md).
+
+**Следваща стъпка:**
+- Точка 6 от "Ред на разработка": upload на снимки на корица + връзка
+  към Cloudflare R2 (`django-storages`). В момента `cover_image` се
+  качва на локалния диск (`MEDIA_ROOT`) само през Django admin — трябва
+  R2 credentials в `.env` (все още празни) плюс storage backend
+  конфигурация в `settings.py`.
+- Преди това вероятно си струва да провериш дали потребителят вече има
+  Cloudflare R2 bucket/credentials готови, или трябва да се създадат.
+
+**Отворени въпроси / бележки:**
+- R2 credentials (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/
+  `AWS_STORAGE_BUCKET_NAME`/`AWS_S3_ENDPOINT_URL`) в `.env` са все още
+  празни — трябва потребителят да ги предостави преди стъпка 6.
