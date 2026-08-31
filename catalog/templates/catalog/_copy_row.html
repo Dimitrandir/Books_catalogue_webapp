@@ -1,0 +1,31 @@
+<tr id="copy-row-{{ copy.pk }}">
+    <td>{{ copy.location }}</td>
+    <td>{{ copy.condition }}</td>
+    <td>
+        {% if copy.current_loan %}
+            <div><span class="badge on-loan">на заем при {{ copy.current_loan.person }}</span></div>
+            <form hx-post="{% url 'loans:return_loan' copy.current_loan.pk %}"
+                  hx-target="#copy-row-{{ copy.pk }}" hx-swap="outerHTML" class="loan-form">
+                {% csrf_token %}
+                <button type="submit">Върни</button>
+            </form>
+        {% else %}
+            <div><span class="badge available">на място</span></div>
+            <form hx-post="{% url 'loans:lend_copy' copy.pk %}"
+                  hx-target="#copy-row-{{ copy.pk }}" hx-swap="outerHTML" class="loan-form">
+                {% csrf_token %}
+                {{ lend_form.person }}
+                {{ lend_form.date_given }}
+                <button type="submit">Дай на заем</button>
+                {% if lend_form.person.errors %}<div class="form-error">{{ lend_form.person.errors|join:", " }}</div>{% endif %}
+            </form>
+        {% endif %}
+    </td>
+    <td>
+        {% for loan in copy.loans.all %}
+            {{ loan.person }}: {{ loan.date_given }} → {{ loan.date_returned|default:"сега" }}<br>
+        {% empty %}
+            —
+        {% endfor %}
+    </td>
+</tr>

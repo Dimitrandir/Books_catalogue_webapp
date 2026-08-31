@@ -2,7 +2,9 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 
+from loans.forms import LendForm
 from loans.models import Loan
 
 from .models import Author, Book, Copy, Genre, Location, Publisher
@@ -89,4 +91,5 @@ def book_detail(request, pk):
         copy.current_loan = next(
             (loan for loan in copy.loans.all() if loan.date_returned is None), None
         )
-    return render(request, 'catalog/book_detail.html', {'book': book})
+    lend_form = LendForm(initial={'date_given': timezone.now().date()})
+    return render(request, 'catalog/book_detail.html', {'book': book, 'lend_form': lend_form})

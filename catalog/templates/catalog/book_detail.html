@@ -29,24 +29,7 @@
         </thead>
         <tbody>
             {% for copy in book.copies.all %}
-                <tr>
-                    <td>{{ copy.location }}</td>
-                    <td>{{ copy.condition }}</td>
-                    <td>
-                        {% if copy.current_loan %}
-                            <span class="badge on-loan">на заем при {{ copy.current_loan.person }}</span>
-                        {% else %}
-                            <span class="badge available">на място</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% for loan in copy.loans.all %}
-                            {{ loan.person }}: {{ loan.date_given }} → {{ loan.date_returned|default:"сега" }}<br>
-                        {% empty %}
-                            —
-                        {% endfor %}
-                    </td>
-                </tr>
+                {% include "catalog/_copy_row.html" with copy=copy lend_form=lend_form %}
             {% empty %}
                 <tr><td colspan="4">Няма регистрирани екземпляри.</td></tr>
             {% endfor %}
