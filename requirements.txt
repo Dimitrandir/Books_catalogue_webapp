@@ -1,6 +1,7 @@
-Django>=5.0,<6.0
+Django>=5.0
 psycopg2-binary>=2.9
 python-dotenv>=1.0
+dj-database-url>=2.1
 django-storages[s3]>=1.14
 Pillow>=10.0
 django-htmx>=1.17
