@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Нова книга — Семейна библиотека{% endblock %}
+
+{% block content %}
+    <a class="back-link" href="{% url 'catalog:book_list' %}">← към списъка</a>
+
+    <h1>Добавяне на нова книга</h1>
+
+    <form method="post" enctype="multipart/form-data" class="entry-form">
+        {% csrf_token %}
+        {{ book_form.as_p }}
+
+        <h2>Първи екземпляр</h2>
+        <p class="hint">Локацията и жанровете/авторите се управляват от Django admin —
+            ако нужният запис липсва, добави го там първо.</p>
+        {{ copy_form.as_p }}
+
+        <button type="submit">Запази книгата</button>
+    </form>
+{% endblock %}

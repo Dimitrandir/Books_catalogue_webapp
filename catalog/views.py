@@ -1,12 +1,13 @@
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from loans.forms import LendForm
 from loans.models import Loan
 
+from .forms import BookForm, CopyForm
 from .models import Author, Book, Copy, Genre, Location, Publisher
 
 
@@ -93,3 +94,21 @@ def book_detail(request, pk):
         )
     lend_form = LendForm(initial={'date_given': timezone.now().date()})
     return render(request, 'catalog/book_detail.html', {'book': book, 'lend_form': lend_form})
+
+
+def book_create(request):
+    if request.method == 'POST':
+        book_form = BookForm(request.POST, request.FILES)
+        copy_form = CopyForm(request.POST)
+        if book_form.is_valid() and copy_form.is_valid():
+            book = book_form.save()
+            copy = copy_form.save(commit=False)
+            copy.book = book
+            copy.save()
+            return redirect('catalog:book_detail', pk=book.pk)
+    else:
+        book_form = BookForm()
+        copy_form = CopyForm()
+    return render(
+        request, 'catalog/book_form.html', {'book_form': book_form, 'copy_form': copy_form}
+    )

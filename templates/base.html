@@ -128,6 +128,42 @@
             cursor: pointer;
         }
         .form-error { color: #a13b3b; font-size: 0.8rem; width: 100%; }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .page-header h1 { margin: 0; }
+        .button-link {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .entry-form { max-width: 500px; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+        .entry-form p { margin: 0 0 0.9rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .entry-form label { font-weight: 600; font-size: 0.9rem; }
+        .entry-form input, .entry-form select, .entry-form textarea {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font: inherit;
+        }
+        .entry-form .hint { color: var(--muted); font-size: 0.85rem; }
+        .entry-form button {
+            padding: 0.5rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .errorlist { color: #a13b3b; font-size: 0.85rem; padding-left: 1rem; margin: 0.2rem 0; }
     </style>
 </head>
 <body>

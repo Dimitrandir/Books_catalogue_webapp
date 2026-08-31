@@ -3,6 +3,11 @@
 {% block title %}Книги — Семейна библиотека{% endblock %}
 
 {% block content %}
+    <div class="page-header">
+        <h1>Книги</h1>
+        <a class="button-link" href="{% url 'catalog:book_create' %}">+ Добави книга</a>
+    </div>
+
     <form class="filters" hx-get="{% url 'catalog:book_list' %}" hx-target="#book-results"
           hx-select="#book-results" hx-swap="outerHTML" hx-push-url="true">
         <input type="text" name="q" placeholder="Търсене по заглавие, автор, резюме…" value="{{ query }}">
