@@ -160,3 +160,40 @@
 **Отворени въпроси / бележки:**
 - Не е създаден Django superuser все още — ще трябва за реален достъп до
   `/admin/` (`python manage.py createsuperuser`).
+
+---
+
+## 2026-08-31 (продължение 3)
+
+**Свършено:**
+- `loans/models.py`: `Person` (справочен модел, `name` unique, `__str__`
+  връща `name`) и `Loan` (FK към `catalog.Copy` и `loans.Person`,
+  `date_given` DateField, `date_returned` nullable/blank — текущо "на заем"
+  състояние = последен `Loan` за `Copy` с `date_returned IS NULL`, per
+  `docs/DATA_MODEL.md`). `Loan.__str__` показва статус ("на заем"/"върната").
+- `loans/admin.py`: `PersonAdmin` + `LoanAdmin` с `autocomplete_fields` за
+  `copy`/`person` (изисква `search_fields` в `CopyAdmin`/`PersonAdmin`,
+  вече налични).
+- `makemigrations loans` → прегледана `0001_initial.py` (dependency към
+  `catalog.0001_initial`) → приложена към `family_library`.
+- Sanity-test през shell: създаден/върнат тестов `Loan`, проверено че
+  `date_returned` update-ва статуса в `__str__`, тестовите данни изтрити.
+
+**Текущо състояние:**
+- И двата основни app-а (`catalog`, `loans`) вече имат пълния модел на
+  данните от `docs/DATA_MODEL.md`. Admin е напълно функционален за CRUD
+  на всичко: Author/Genre/Publisher/Location/Condition/Book/Copy/Person/Loan.
+- `scanner` app е все още празен (само `startapp` скелето) — идва по-късно
+  (стъпка 7 от плана).
+- Все още няма custom views/templates отвъд Django admin.
+
+**Следваща стъпка:**
+- Точка 4 от "Ред на разработка" в `CLAUDE.md`: основни custom изгледи —
+  списък с книги, детайли за книга, търсене/филтриране (PostgreSQL
+  full-text search през `django.contrib.postgres.search`, вече в
+  `INSTALLED_APPS`).
+- Преди това вероятно си струва `createsuperuser` + малко seed данни за да
+  има какво да се показва в списъка.
+
+**Отворени въпроси / бележки:**
+- Пак: няма superuser все още.
