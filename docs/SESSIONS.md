@@ -426,3 +426,38 @@
 **Отворени въпроси / бележки:**
 - Same as before — R2 credentials и `ANTHROPIC_API_KEY` все още липсват
   в `.env`.
+
+---
+
+## 2026-09-01 (продължение 2)
+
+**Свършено:**
+- Потребителят поиска по-лесен избор на дата ("да стане календарче") за
+  `date_given` в "Дай на заем" формата — native `<input type="date">`
+  вариира силно между браузъри/платформи (wheel picker на iOS и т.н.).
+- Заменено с custom vanilla-JS calendar popup: readonly текстово поле
+  (`class="date-input"`, ISO стойност) + `datePickerOpen`/`datePickerRender`
+  в `base.html` — месечен грид на български (Пн–Нд, имена на месеците),
+  навигация назад/напред, highlight на днес и избраната дата, клик на ден
+  → попълва ISO стойност и затваря; клик извън затваря; повторен клик на
+  полето toggle-ва отваряне/затваряне. Django приема ISO формат директно
+  (`%Y-%m-%d` е първи в global `DATE_INPUT_FORMATS`, потвърдено — bg
+  locale няма собствен override).
+- Приложено само за `loans/forms.py::LendForm.date_given` — единственото
+  date поле извън Django admin в момента.
+- Ръчно тествано в браузър: отваряне/затваряне (toggle + outside-click),
+  навигация месец назад/напред, избор на ден, коректен highlight на today/
+  selected при повторно отваряне, пълен submit flow (заемане с дата 15
+  август вместо днес — записа се вярно). Тестовите данни изтрити.
+
+**Текущо състояние:**
+- И двата "trouble spots" от UX ревюто на потребителя (multi-select
+  list-box и date input) вече са заменени с custom widgets, консистентни
+  по стил и поведение (същия vanilla-JS подход, без нови dependencies).
+
+**Следваща стъпка:**
+- `scanner` app — АИ разпознаване на корица (Claude API vision) + Open
+  Library/Google Books обогатяване. Ще трябва `ANTHROPIC_API_KEY` в `.env`.
+
+**Отворени въпроси / бележки:**
+- R2 credentials и `ANTHROPIC_API_KEY` все още липсват в `.env`.
