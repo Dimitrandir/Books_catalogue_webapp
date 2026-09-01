@@ -461,3 +461,56 @@
 
 **Отворени въпроси / бележки:**
 - R2 credentials и `ANTHROPIC_API_KEY` все още липсват в `.env`.
+
+---
+
+## 2026-09-01 (продължение 3)
+
+**Свършено:**
+- Потребителят посочи, че admin-only политиката за Author/Genre/Publisher
+  забавя вкарването на книги твърде много. Обсъдено кратко (сложност,
+  компромис с конвенцията) — потребителят потвърди съзнателното
+  отклонение от `CLAUDE.md` и поиска нормализация + case-insensitive
+  dedup при create.
+- Проверено и потвърдено: case-insensitive търсене на кирилица вече
+  работеше правилно без промяна — Postgres locale е `en_US.UTF-8`,
+  Django `icontains` компилира до `UPPER(name) LIKE UPPER(...)`, а
+  Postgres `UPPER()` коректно casefold-ва кирилица под тази locale
+  (тествано директно в SQL и през Django ORM).
+- Открити и изчистени остатъчни тестови reference записи (author/genre/
+  publisher) от предишни сесии, пропуснати при по-раншно cleanup.
+- Имплементирано inline create:
+  - `catalog/views.py`: `_normalize_name` (trim + collapse whitespace) +
+    `_tag_quick_create` helper, `get_or_create(name__iexact=..., defaults=...)`
+    за dedup (запазва оригиналната casing на първия въведен запис).
+    `_tag_search` вече връща `exact_match` флаг, за да не предлага "+"
+    когато записът вече съществува.
+  - Author/Genre (tag-picker): `_tag_search_results.html` показва бутон
+    "+ Добави „X"" при липса на точно съвпадение; `tagPickerCreate` в
+    `base.html` POST-ва към нов quick-create endpoint и добавя резултата
+    директно като chip.
+  - Publisher (plain dropdown, не tag-picker): нов "+" бутон до select-а;
+    `inlineSelectCreate` прави `prompt()` за име, POST-ва, добавя `<option>`
+    и го избира — по-лека реализация от tag-picker, защото Publisher е
+    single-value.
+  - `CLAUDE.md` обновен: `Location`/`Condition`/`Person` остават
+    admin-only; `Author`/`Genre`/`Publisher` вече могат и inline.
+- Ръчно тествано в браузър: create на нов автор през "+" (chip се появява
+  веднага), повторен POST със същото име в различен регистър/whitespace
+  потвърждава dedup (връща същия `id`, запазена оригинална casing),
+  publisher "+" добавя/избира нова опция, пълен submit записва книгата
+  коректно с inline-създадените записи. Тестовите данни изтрити.
+
+**Текущо състояние:**
+- Добавянето на книга вече е значително по-бързо — не се налага
+  прекъсване към admin за нов автор/жанр/издателство. Location/Condition/
+  Person остават admin-only (по-рядко се добавят нови).
+
+**Следваща стъпка:**
+- `scanner` app — АИ разпознаване на корица (Claude API vision) + Open
+  Library/Google Books обогатяване. Ще трябва `ANTHROPIC_API_KEY` в
+  `.env`. Естествен fit: АИ ще предлага имена на автори, а вече имаме
+  quick-create + case-insensitive dedup механизъм, който да ползва.
+
+**Отворени въпроси / бележки:**
+- R2 credentials и `ANTHROPIC_API_KEY` все още липсват в `.env`.
