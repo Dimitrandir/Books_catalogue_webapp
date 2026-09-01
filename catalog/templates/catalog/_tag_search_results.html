@@ -1,0 +1,8 @@
+{% for item in results %}
+    <button type="button" class="tag-result" data-id="{{ item.pk }}" data-name="{{ item.name }}"
+            onclick="tagPickerAdd(this)">{{ item.name }}</button>
+{% empty %}
+    <div class="tag-empty">
+        {% if query %}Няма съвпадения за „{{ query }}“{% else %}Няма записи — добави през admin{% endif %}
+    </div>
+{% endfor %}

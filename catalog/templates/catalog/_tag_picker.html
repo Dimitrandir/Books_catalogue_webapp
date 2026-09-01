@@ -1,0 +1,16 @@
+<div class="tag-picker" data-field="{{ field_name }}">
+    <div class="chips">
+        {% for item in selected %}
+            <span class="chip" data-id="{{ item.pk }}">
+                {{ item.name }}
+                <input type="hidden" name="{{ field_name }}" value="{{ item.pk }}">
+                <button type="button" onclick="this.closest('.chip').remove()">×</button>
+            </span>
+        {% endfor %}
+    </div>
+    <input type="text" name="q" class="tag-search" placeholder="{{ placeholder }}" autocomplete="off"
+           hx-get="{% url search_url %}" hx-trigger="keyup changed delay:300ms, focus"
+           hx-target="next .tag-results" hx-swap="innerHTML" hx-include="this"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();}">
+    <div class="tag-results"></div>
+</div>

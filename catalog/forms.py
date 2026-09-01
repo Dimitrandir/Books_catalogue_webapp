@@ -8,8 +8,6 @@ class BookForm(forms.ModelForm):
         model = Book
         fields = ['title', 'authors', 'genres', 'publisher', 'year', 'summary', 'cover_image']
         widgets = {
-            'authors': forms.SelectMultiple(attrs={'size': 6}),
-            'genres': forms.SelectMultiple(attrs={'size': 4}),
             'summary': forms.Textarea(attrs={'rows': 4}),
         }
 

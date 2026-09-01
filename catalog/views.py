@@ -106,9 +106,29 @@ def book_create(request):
             copy.book = book
             copy.save()
             return redirect('catalog:book_detail', pk=book.pk)
+        selected_authors = Author.objects.filter(pk__in=book_form.data.getlist('authors'))
+        selected_genres = Genre.objects.filter(pk__in=book_form.data.getlist('genres'))
     else:
         book_form = BookForm()
         copy_form = CopyForm()
-    return render(
-        request, 'catalog/book_form.html', {'book_form': book_form, 'copy_form': copy_form}
-    )
+        selected_authors = Author.objects.none()
+        selected_genres = Genre.objects.none()
+    context = {
+        'book_form': book_form,
+        'copy_form': copy_form,
+        'selected_authors': selected_authors,
+        'selected_genres': selected_genres,
+    }
+    return render(request, 'catalog/book_form.html', context)
+
+
+def author_search(request):
+    q = request.GET.get('q', '').strip()
+    results = Author.objects.filter(name__icontains=q) if q else Author.objects.all()
+    return render(request, 'catalog/_tag_search_results.html', {'results': results[:10], 'query': q})
+
+
+def genre_search(request):
+    q = request.GET.get('q', '').strip()
+    results = Genre.objects.filter(name__icontains=q) if q else Genre.objects.all()
+    return render(request, 'catalog/_tag_search_results.html', {'results': results[:10], 'query': q})

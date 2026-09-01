@@ -9,11 +9,53 @@
 
     <form method="post" enctype="multipart/form-data" class="entry-form">
         {% csrf_token %}
-        {{ book_form.as_p }}
+        {{ book_form.non_field_errors }}
+
+        <p>
+            {{ book_form.title.label_tag }}
+            {{ book_form.title }}
+            {{ book_form.title.errors }}
+        </p>
+
+        <p>
+            {{ book_form.authors.label_tag }}
+            {% include "catalog/_tag_picker.html" with field_name="authors" search_url="catalog:author_search" selected=selected_authors placeholder="Търси автор…" %}
+            {{ book_form.authors.errors }}
+        </p>
+
+        <p>
+            {{ book_form.genres.label_tag }}
+            {% include "catalog/_tag_picker.html" with field_name="genres" search_url="catalog:genre_search" selected=selected_genres placeholder="Търси жанр…" %}
+            {{ book_form.genres.errors }}
+        </p>
+
+        <p>
+            {{ book_form.publisher.label_tag }}
+            {{ book_form.publisher }}
+            {{ book_form.publisher.errors }}
+        </p>
+
+        <p>
+            {{ book_form.year.label_tag }}
+            {{ book_form.year }}
+            {{ book_form.year.errors }}
+        </p>
+
+        <p>
+            {{ book_form.summary.label_tag }}
+            {{ book_form.summary }}
+            {{ book_form.summary.errors }}
+        </p>
+
+        <p>
+            {{ book_form.cover_image.label_tag }}
+            {{ book_form.cover_image }}
+            {{ book_form.cover_image.errors }}
+        </p>
 
         <h2>Първи екземпляр</h2>
-        <p class="hint">Локацията и жанровете/авторите се управляват от Django admin —
-            ако нужният запис липсва, добави го там първо.</p>
+        <p class="hint">Локацията и справочните записи (автори/жанрове/издателство) се
+            управляват от Django admin — ако нужният запис липсва, добави го там първо.</p>
         {{ copy_form.as_p }}
 
         <button type="submit">Запази книгата</button>
