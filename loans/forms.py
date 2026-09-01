@@ -8,5 +8,11 @@ class LendForm(forms.ModelForm):
         model = Loan
         fields = ['person', 'date_given']
         widgets = {
-            'date_given': forms.DateInput(attrs={'type': 'date'}),
+            'date_given': forms.DateInput(attrs={
+                'class': 'date-input',
+                'readonly': 'readonly',
+                'autocomplete': 'off',
+                'onclick': 'datePickerOpen(this)',
+                'placeholder': 'Избери дата',
+            }),
         }

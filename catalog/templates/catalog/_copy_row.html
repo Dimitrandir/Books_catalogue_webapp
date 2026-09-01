@@ -15,7 +15,7 @@
                   hx-target="#copy-row-{{ copy.pk }}" hx-swap="outerHTML" class="loan-form">
                 {% csrf_token %}
                 {{ lend_form.person }}
-                {{ lend_form.date_given }}
+                <span class="date-field">{{ lend_form.date_given }}</span>
                 <button type="submit">Дай на заем</button>
                 {% if lend_form.person.errors %}<div class="form-error">{{ lend_form.person.errors|join:", " }}</div>{% endif %}
             </form>

@@ -209,6 +209,55 @@
         }
         .tag-result:hover { background: #f0f0f0; }
         .tag-empty { color: var(--muted); font-size: 0.8rem; }
+
+        .date-field { position: relative; display: inline-block; }
+        .date-input { cursor: pointer; background: white; width: 8.5rem; }
+        .date-popup {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            z-index: 20;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+            width: 220px;
+        }
+        .date-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .date-popup-header button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.1rem 0.5rem;
+            color: var(--accent);
+        }
+        .date-popup-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .date-popup-dow { color: var(--muted); font-weight: 600; padding: 0.2rem 0; }
+        .date-popup-day {
+            background: none;
+            border: none;
+            padding: 0.3rem 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .date-popup-day:hover { background: #f0f0f0; }
+        .date-popup-day.is-today { font-weight: 700; color: var(--accent); }
+        .date-popup-day.is-selected { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
@@ -249,6 +298,95 @@
             searchInput.value = '';
             searchInput.focus();
             htmx.trigger(searchInput, 'keyup');
+        }
+
+        const BG_MONTHS = ['Януари', 'Февруари', 'Март', 'Април', 'Май', 'Юни',
+            'Юли', 'Август', 'Септември', 'Октомври', 'Ноември', 'Декември'];
+        const BG_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+
+        function datePickerRemoveExisting() {
+            document.querySelectorAll('.date-popup').forEach(el => el.remove());
+            document.removeEventListener('click', datePickerOutsideClick, true);
+        }
+
+        function datePickerOutsideClick(event) {
+            if (!event.target.closest('.date-field')) datePickerRemoveExisting();
+        }
+
+        function datePickerOpen(input) {
+            const alreadyOpenForThis = input.parentElement.querySelector('.date-popup');
+            datePickerRemoveExisting();
+            if (alreadyOpenForThis) return;
+
+            const initial = input.value ? new Date(input.value + 'T00:00:00') : new Date();
+            datePickerRender(input, initial.getFullYear(), initial.getMonth());
+            document.addEventListener('click', datePickerOutsideClick, true);
+        }
+
+        function datePickerRender(input, year, month) {
+            document.querySelectorAll('.date-popup').forEach(el => el.remove());
+
+            const popup = document.createElement('div');
+            popup.className = 'date-popup';
+            popup.addEventListener('click', event => event.stopPropagation());
+
+            const header = document.createElement('div');
+            header.className = 'date-popup-header';
+
+            const prev = document.createElement('button');
+            prev.type = 'button';
+            prev.textContent = '‹';
+            prev.addEventListener('click', () => {
+                const m = month === 0 ? 11 : month - 1;
+                datePickerRender(input, month === 0 ? year - 1 : year, m);
+            });
+
+            const label = document.createElement('span');
+            label.textContent = `${BG_MONTHS[month]} ${year}`;
+
+            const next = document.createElement('button');
+            next.type = 'button';
+            next.textContent = '›';
+            next.addEventListener('click', () => {
+                const m = month === 11 ? 0 : month + 1;
+                datePickerRender(input, month === 11 ? year + 1 : year, m);
+            });
+
+            header.append(prev, label, next);
+
+            const grid = document.createElement('div');
+            grid.className = 'date-popup-grid';
+            BG_DAYS.forEach(dow => {
+                const cell = document.createElement('span');
+                cell.className = 'date-popup-dow';
+                cell.textContent = dow;
+                grid.appendChild(cell);
+            });
+
+            const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // Monday = 0
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const todayIso = new Date().toISOString().slice(0, 10);
+
+            for (let i = 0; i < firstWeekday; i++) {
+                grid.appendChild(document.createElement('span'));
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = 'date-popup-day';
+                cell.textContent = day;
+                if (iso === todayIso) cell.classList.add('is-today');
+                if (iso === input.value) cell.classList.add('is-selected');
+                cell.addEventListener('click', () => {
+                    input.value = iso;
+                    datePickerRemoveExisting();
+                });
+                grid.appendChild(cell);
+            }
+
+            popup.append(header, grid);
+            input.parentElement.appendChild(popup);
         }
     </script>
 </body>
