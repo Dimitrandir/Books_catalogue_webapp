@@ -1,8 +1,11 @@
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from loans.forms import LendForm
 from loans.models import Loan
@@ -122,13 +125,49 @@ def book_create(request):
     return render(request, 'catalog/book_form.html', context)
 
 
-def author_search(request):
+def _normalize_name(raw):
+    return ' '.join(raw.split())
+
+
+def _tag_search(request, model, create_url_name):
     q = request.GET.get('q', '').strip()
-    results = Author.objects.filter(name__icontains=q) if q else Author.objects.all()
-    return render(request, 'catalog/_tag_search_results.html', {'results': results[:10], 'query': q})
+    results = list((model.objects.filter(name__icontains=q) if q else model.objects.all())[:10])
+    exact_match = q and any(r.name.lower() == q.lower() for r in results)
+    context = {
+        'results': results,
+        'query': q,
+        'exact_match': exact_match,
+        'create_url': reverse(create_url_name),
+    }
+    return render(request, 'catalog/_tag_search_results.html', context)
+
+
+def _tag_quick_create(request, model):
+    name = _normalize_name(request.POST.get('name', ''))
+    if not name:
+        return JsonResponse({'error': 'Името е празно.'}, status=400)
+    item, _ = model.objects.get_or_create(name__iexact=name, defaults={'name': name})
+    return JsonResponse({'id': item.pk, 'name': item.name})
+
+
+def author_search(request):
+    return _tag_search(request, Author, 'catalog:author_quick_create')
 
 
 def genre_search(request):
-    q = request.GET.get('q', '').strip()
-    results = Genre.objects.filter(name__icontains=q) if q else Genre.objects.all()
-    return render(request, 'catalog/_tag_search_results.html', {'results': results[:10], 'query': q})
+    return _tag_search(request, Genre, 'catalog:genre_quick_create')
+
+
+@require_POST
+def author_quick_create(request):
+    return _tag_quick_create(request, Author)
+
+
+@require_POST
+def genre_quick_create(request):
+    return _tag_quick_create(request, Genre)
+
+
+@require_POST
+def publisher_quick_create(request):
+    return _tag_quick_create(request, Publisher)

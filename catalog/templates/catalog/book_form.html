@@ -31,7 +31,11 @@
 
         <p>
             {{ book_form.publisher.label_tag }}
-            {{ book_form.publisher }}
+            <div class="inline-add-select">
+                {{ book_form.publisher }}
+                <button type="button" class="inline-add-btn"
+                        onclick="inlineSelectCreate(this, '{% url 'catalog:publisher_quick_create' %}', 'Име на издателство:')">+</button>
+            </div>
             {{ book_form.publisher.errors }}
         </p>
 
@@ -54,8 +58,8 @@
         </p>
 
         <h2>Първи екземпляр</h2>
-        <p class="hint">Локацията и справочните записи (автори/жанрове/издателство) се
-            управляват от Django admin — ако нужният запис липсва, добави го там първо.</p>
+        <p class="hint">Локацията се управлява от Django admin — ако нужната липсва,
+            добави я там първо.</p>
         {{ copy_form.as_p }}
 
         <button type="submit">Запази книгата</button>

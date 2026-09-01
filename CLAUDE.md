@@ -39,8 +39,12 @@
 
 Виж `docs/DATA_MODEL.md` за пълни детайли. Накратко:
 
-- Справочни модели (dropdown, редактируеми само през Django admin):
-  `Author`, `Genre`, `Publisher`, `Location`, `Condition`, `Person`
+- Справочни модели (dropdown): `Author`, `Genre`, `Publisher`, `Location`,
+  `Condition`, `Person`. `Location`, `Condition`, `Person` се редактират
+  само през Django admin. `Author`/`Genre`/`Publisher` могат да се добавят
+  и inline от формата за добавяне на книга (бутон "+", с normalize +
+  case-insensitive проверка за дубликати преди create) — admin-only
+  политиката забавяше вкарването на книги твърде много.
 - `Book` — заглавие, година, резюме, корица (image); M2M към `Author` и
   `Genre`; FK към `Publisher`
 - `Copy` — конкретен физически екземпляр: FK към `Book`, FK към `Location`,

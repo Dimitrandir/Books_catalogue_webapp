@@ -1,8 +1,11 @@
 {% for item in results %}
     <button type="button" class="tag-result" data-id="{{ item.pk }}" data-name="{{ item.name }}"
-            onclick="tagPickerAdd(this)">{{ item.name }}</button>
+            onclick="tagPickerAddResult(this)">{{ item.name }}</button>
 {% empty %}
     <div class="tag-empty">
-        {% if query %}Няма съвпадения за „{{ query }}“{% else %}Няма записи — добави през admin{% endif %}
+        {% if query %}Няма съвпадения за „{{ query }}“{% else %}Няма записи{% endif %}
     </div>
 {% endfor %}
+{% if query and not exact_match %}
+    <button type="button" class="tag-create" onclick="tagPickerCreate(this, '{{ create_url }}')">+ Добави „{{ query }}“</button>
+{% endif %}

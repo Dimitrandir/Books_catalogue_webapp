@@ -10,4 +10,7 @@ urlpatterns = [
     path('books/<int:pk>/', views.book_detail, name='book_detail'),
     path('authors/search/', views.author_search, name='author_search'),
     path('genres/search/', views.genre_search, name='genre_search'),
+    path('authors/quick-create/', views.author_quick_create, name='author_quick_create'),
+    path('genres/quick-create/', views.genre_quick_create, name='genre_quick_create'),
+    path('publishers/quick-create/', views.publisher_quick_create, name='publisher_quick_create'),
 ]
