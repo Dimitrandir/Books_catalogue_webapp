@@ -27,10 +27,6 @@ TOOL_SCHEMA = {
                 'type': 'string',
                 'description': 'Издателство, ако се разчита от корицата.',
             },
-            'isbn': {
-                'type': 'string',
-                'description': 'ISBN номер, ако е видим на корицата (обикновено на гърба).',
-            },
         },
         'required': ['title', 'authors'],
     },
@@ -80,7 +76,7 @@ def extract_cover_info(image_bytes):
                     },
                     {
                         'type': 'text',
-                        'text': 'Разпознай заглавие, автори, издателство и ISBN от тази корица на книга.',
+                        'text': 'Разпознай заглавие, автори и издателство от тази корица на книга.',
                     },
                 ],
             }],
@@ -97,5 +93,4 @@ def extract_cover_info(image_bytes):
         'title': (data.get('title') or '').strip(),
         'authors': [name.strip() for name in (data.get('authors') or []) if name and name.strip()],
         'publisher': (data.get('publisher') or '').strip(),
-        'isbn': (data.get('isbn') or '').strip(),
     }

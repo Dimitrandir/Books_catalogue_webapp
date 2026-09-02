@@ -27,7 +27,6 @@ def scan_cover(request):
         return JsonResponse({'error': str(exc)}, status=502)
 
     enrichment = open_library.enrich(
-        isbn=info['isbn'],
         title=info['title'],
         author=info['authors'][0] if info['authors'] else '',
     )
