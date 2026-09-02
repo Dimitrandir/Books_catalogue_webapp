@@ -57,7 +57,7 @@ def default_condition():
 
 class Book(models.Model):
     title = models.CharField(max_length=500)
-    authors = models.ManyToManyField(Author, related_name='books')
+    authors = models.ManyToManyField(Author, related_name='books', blank=True)
     genres = models.ManyToManyField(Genre, related_name='books', blank=True)
     publisher = models.ForeignKey(
         Publisher, on_delete=models.SET_NULL, null=True, blank=True, related_name='books',
