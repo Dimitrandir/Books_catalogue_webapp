@@ -236,6 +236,20 @@
         }
         .inline-add-btn:hover { background: #e3f3ea; }
 
+        .scan-btn {
+            display: block;
+            margin-top: 0.35rem;
+            padding: 0.35rem 0.8rem;
+            border: 1px dashed var(--accent);
+            border-radius: 4px;
+            background: white;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .scan-btn:hover { background: #e3f3ea; }
+        .scan-btn:disabled { opacity: 0.6; cursor: default; }
+
         .date-field { position: relative; display: inline-block; }
         .date-input { cursor: pointer; background: white; width: 8.5rem; }
         .date-popup {
@@ -349,6 +363,17 @@
                 .catch(() => alert('Грешка при добавяне.'));
         }
 
+        function selectSetOption(select, id, name) {
+            let option = select.querySelector(`option[value="${id}"]`);
+            if (!option) {
+                option = document.createElement('option');
+                option.value = id;
+                select.appendChild(option);
+            }
+            option.textContent = name;
+            select.value = id;
+        }
+
         function inlineSelectCreate(button, url, promptText) {
             const name = prompt(promptText);
             if (!name || !name.trim()) return;
@@ -363,17 +388,51 @@
                 body: 'name=' + encodeURIComponent(name.trim()),
             })
                 .then(response => response.json())
-                .then(data => {
-                    let option = select.querySelector(`option[value="${data.id}"]`);
-                    if (!option) {
-                        option = document.createElement('option');
-                        option.value = data.id;
-                        select.appendChild(option);
-                    }
-                    option.textContent = data.name;
-                    select.value = data.id;
-                })
+                .then(data => selectSetOption(select, data.id, data.name))
                 .catch(() => alert('Грешка при добавяне.'));
+        }
+
+        function scanCoverStart(button) {
+            const form = button.closest('form');
+            const fileInput = form.querySelector('input[type=file][name=cover_image]');
+            const file = fileInput.files[0];
+            const status = document.getElementById('scan-status');
+
+            if (!file) {
+                status.textContent = 'Първо избери снимка на корицата.';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('photo', file);
+
+            button.disabled = true;
+            status.textContent = 'Разпознаване…';
+
+            fetch("{% url 'scanner:scan_cover' %}", {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCsrfToken(form)},
+                body: formData,
+            })
+                .then(response => response.json().then(data => ({ok: response.ok, data})))
+                .then(({ok, data}) => {
+                    if (!ok) throw new Error(data.error || 'Грешка при разпознаване.');
+
+                    if (data.title) form.title.value = data.title;
+                    if (data.year) form.year.value = data.year;
+                    if (data.summary) form.summary.value = data.summary;
+
+                    const authorsPicker = form.querySelector('.tag-picker[data-field="authors"]');
+                    (data.authors || []).forEach(a => tagPickerAdd(authorsPicker, a.id, a.name));
+
+                    if (data.publisher) {
+                        selectSetOption(form.querySelector('select[name=publisher]'), data.publisher.id, data.publisher.name);
+                    }
+
+                    status.textContent = 'Разпознато — прегледай и коригирай преди запис.';
+                })
+                .catch(error => { status.textContent = error.message || 'Грешка при разпознаване.'; })
+                .finally(() => { button.disabled = false; });
         }
 
         const BG_MONTHS = ['Януари', 'Февруари', 'Март', 'Април', 'Май', 'Юни',

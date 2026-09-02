@@ -12,6 +12,14 @@
         {{ book_form.non_field_errors }}
 
         <p>
+            {{ book_form.cover_image.label_tag }}
+            {{ book_form.cover_image }}
+            <button type="button" class="scan-btn" onclick="scanCoverStart(this)">🔍 Разпознай от снимката</button>
+            <span class="hint" id="scan-status"></span>
+            {{ book_form.cover_image.errors }}
+        </p>
+
+        <p>
             {{ book_form.title.label_tag }}
             {{ book_form.title }}
             {{ book_form.title.errors }}
@@ -49,12 +57,6 @@
             {{ book_form.summary.label_tag }}
             {{ book_form.summary }}
             {{ book_form.summary.errors }}
-        </p>
-
-        <p>
-            {{ book_form.cover_image.label_tag }}
-            {{ book_form.cover_image }}
-            {{ book_form.cover_image.errors }}
         </p>
 
         <h2>Първи екземпляр</h2>
