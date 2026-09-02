@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Нова книга — Семейна библиотека{% endblock %}
+{% block title %}{% if is_edit %}Редакция на „{{ book.title }}“{% else %}Нова книга{% endif %} — Семейна библиотека{% endblock %}
 
 {% block content %}
-    <a class="back-link" href="{% url 'catalog:book_list' %}">← към списъка</a>
-
-    <h1>Добавяне на нова книга</h1>
+    {% if is_edit %}
+        <a class="back-link" href="{% url 'catalog:book_detail' book.pk %}">← към книгата</a>
+        <h1>Редакция на книга</h1>
+    {% else %}
+        <a class="back-link" href="{% url 'catalog:book_list' %}">← към списъка</a>
+        <h1>Добавяне на нова книга</h1>
+    {% endif %}
 
     <form method="post" enctype="multipart/form-data" class="entry-form">
         {% csrf_token %}
@@ -59,11 +63,13 @@
             {{ book_form.summary.errors }}
         </p>
 
-        <h2>Първи екземпляр</h2>
-        <p class="hint">Локацията се управлява от Django admin — ако нужната липсва,
-            добави я там първо.</p>
-        {{ copy_form.as_p }}
+        {% if not is_edit %}
+            <h2>Първи екземпляр</h2>
+            <p class="hint">Локацията се управлява от Django admin — ако нужната липсва,
+                добави я там първо.</p>
+            {{ copy_form.as_p }}
+        {% endif %}
 
-        <button type="submit">Запази книгата</button>
+        <button type="submit">{% if is_edit %}Запази промените{% else %}Запази книгата{% endif %}</button>
     </form>
 {% endblock %}

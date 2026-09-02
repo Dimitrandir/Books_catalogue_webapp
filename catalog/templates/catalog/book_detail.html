@@ -5,7 +5,10 @@
 {% block content %}
     <a class="back-link" href="{% url 'catalog:book_list' %}">← към списъка</a>
 
-    <h1>{{ book.title }}</h1>
+    <div class="page-header">
+        <h1>{{ book.title }}</h1>
+        <a class="button-link" href="{% url 'catalog:book_edit' book.pk %}">✎ Редактирай</a>
+    </div>
     <p class="authors">{{ book.authors.all|join:", " }}{% if book.year %} · {{ book.year }}{% endif %}{% if book.publisher %} · {{ book.publisher }}{% endif %}</p>
     <p>{% for genre in book.genres.all %}<span class="badge available">{{ genre.name }}</span> {% endfor %}</p>
 

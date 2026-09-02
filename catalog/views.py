@@ -121,6 +121,30 @@ def book_create(request):
         'copy_form': copy_form,
         'selected_authors': selected_authors,
         'selected_genres': selected_genres,
+        'is_edit': False,
+    }
+    return render(request, 'catalog/book_form.html', context)
+
+
+def book_edit(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == 'POST':
+        book_form = BookForm(request.POST, request.FILES, instance=book)
+        if book_form.is_valid():
+            book_form.save()
+            return redirect('catalog:book_detail', pk=book.pk)
+        selected_authors = Author.objects.filter(pk__in=book_form.data.getlist('authors'))
+        selected_genres = Genre.objects.filter(pk__in=book_form.data.getlist('genres'))
+    else:
+        book_form = BookForm(instance=book)
+        selected_authors = book.authors.all()
+        selected_genres = book.genres.all()
+    context = {
+        'book': book,
+        'book_form': book_form,
+        'selected_authors': selected_authors,
+        'selected_genres': selected_genres,
+        'is_edit': True,
     }
     return render(request, 'catalog/book_form.html', context)
 
