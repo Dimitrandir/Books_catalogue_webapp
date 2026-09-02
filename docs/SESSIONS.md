@@ -514,3 +514,87 @@
 
 **Отворени въпроси / бележки:**
 - R2 credentials и `ANTHROPIC_API_KEY` все още липсват в `.env`.
+
+---
+
+## 2026-09-02
+
+**Свършено:**
+- Потребителят направи собствена промяна в моделите (`Book.authors`/
+  `genres` вече `blank=True`) и мигрира сам (2 миграции: 0002 добави
+  излишен `null=True` на M2M, 0003 го маха — потвърдено чрез
+  `makemigrations --check` че всичко е синхронизирано, нищо неприложено).
+  Закомитнато отделно с ясна бележка, че е направено от потребителя.
+- Даден е `ANTHROPIC_API_KEY`, записан в `.env` (само локално, gitignored).
+- Изградена `scanner` app — АИ разпознаване на корица, точка 7 от плана:
+  - **Дизайн решение**: вместо отделен "scan" екран, разпознаването е
+    вградено директно в `catalog:book_create` формата. Снимката се избира
+    веднъж в стандартното `cover_image` поле; бутон "Разпознай от
+    снимката" я праща за анализ през `fetch`, резултатите prefill-ват
+    формата client-side (title/year/summary + author chips + publisher
+    select), обикновен submit пази книгата. Избягва проблема с "файлът не
+    може да се prefill-не в `<input type=file>` от URL" — снимката просто
+    си остава избрана в полето, не се качва два пъти.
+  - `scanner/claude_client.py`: `extract_cover_info()` — Pillow resize до
+    1024px + re-encode JPEG (по-малък payload, нормализира формата от
+    камерата), Claude API извикване с `tool_choice` forcing структуриран
+    JSON `{title, authors, publisher, isbn}` (по-надеждно от prompt-based
+    free-text JSON parsing). Модел: `claude-sonnet-5`.
+  - `scanner/open_library.py`: `enrich(isbn, title, author)` — ISBN lookup
+    с fallback на title+author search, плюс отделна заявка към
+    `/works/*.json` за резюме (description не идва directly от search
+    resultsите). Връща `{summary, year}`.
+  - `scanner/views.py`: `scan_cover` POST endpoint свързва двете, resolve-ва
+    authors/publisher през същия `get_or_create(name__iexact=...)` dedup
+    pattern като catalog quick-create (reuse на `catalog.views._normalize_name`).
+  - `templates/base.html`: `scanCoverStart()` — reuse на `tagPickerAdd`/
+    `selectSetOption` за prefill.
+  - `book_form.html`: cover_image полето преместено най-отгоре (логичен
+    ред: снимка → разпознаване → останалите полета се появяват попълнени).
+- **Тестване (частично, заради липса на Anthropic credit баланс):**
+  - `claude_client.extract_cover_info()` тестван с реален API ключ и
+    синтетично тестово изображение → authentication работи коректно,
+    грешката е billing-related ("Your credit balance is too low"), НЕ
+    код проблем; `ScanError` handling улавя я правилно.
+  - `open_library.enrich()` тестван самостоятелно с реална книга ("Under
+    the Yoke" / Иван Вазов) → намери година (1912) и резюме коректно.
+  - `scan_cover` view тестван end-to-end през Django test client с
+    mock-нат `claude_client.extract_cover_info` → author/publisher
+    resolution + JSON форма коректни, idempotent create потвърден.
+  - Frontend JS тестван в браузър с mock-нат `window.fetch`: успешен
+    случай (всички полета + author chip + publisher option се появяват
+    коректно), server error (показва се в status реда), липсваща снимка
+    (ясно съобщение "Първо избери снимка").
+  - Всички тестови данни (author/publisher/location) изчистени след теста.
+- Git история: 2 отделни commit-а — един за потребителската model промяна
+  (без Claude co-author таг, тъй като кодът не е мой), един за scanner
+  feature-а.
+
+**Текущо състояние:**
+- `scanner` app е напълно имплементиран и кодово тестван, но **никога не
+  е викан с реален успешен Claude API отговор** — акаунтът няма credit
+  balance. Целият pipeline (Claude extraction → Open Library enrichment →
+  author/publisher resolution → frontend prefill) е верифициран на части,
+  но не end-to-end с истинска снимка на корица.
+- Всички други части от плана в `CLAUDE.md` вече са готови: models,
+  admin, списък/търсене/филтри, детайли, заемане/връщане, ръчно добавяне
+  (с inline quick-create + custom calendar), и сега scanner UI-то.
+
+**Следваща стъпка:**
+- Потребителят трябва да добави credit/billing в Anthropic конзолата.
+  След това: пълен end-to-end тест с реална снимка на книга (най-добре
+  няколко различни корици — включително кирилица, различни издателства,
+  книги без ISBN на корицата) за да се провери реалното качество на
+  разпознаването и на Open Library enrichment-а.
+- Точка 8 от плана: деплой на Render/Railway (остава последна).
+- R2 credentials за cover storage все още липсват в `.env` (точка 6 —
+  засега cover_image се пази на локален диск, работи функционално, но
+  не е production-ready storage).
+
+**Отворени въпроси / бележки:**
+- Ако Claude vision понякога връща частично объркани резултати (напр.
+  грешен автор при преводна литература) — DATA_MODEL.md изрично
+  предупреждава за това; текущият UI вече го адресира чрез "прегледай и
+  редактирай преди запис" flow, но си струва да се внимава при реалното
+  тестване.
+- R2/production storage все още за по-късно.
