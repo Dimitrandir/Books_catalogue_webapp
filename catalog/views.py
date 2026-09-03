@@ -156,6 +156,20 @@ def book_delete(request, pk):
     return redirect('catalog:book_list')
 
 
+def copy_add(request, book_pk):
+    book = get_object_or_404(Book, pk=book_pk)
+    if request.method == 'POST':
+        copy_form = CopyForm(request.POST)
+        if copy_form.is_valid():
+            copy = copy_form.save(commit=False)
+            copy.book = book
+            copy.save()
+            return redirect('catalog:book_detail', pk=book.pk)
+    else:
+        copy_form = CopyForm()
+    return render(request, 'catalog/copy_form.html', {'book': book, 'copy_form': copy_form})
+
+
 def _normalize_name(raw):
     return ' '.join(raw.split())
 
