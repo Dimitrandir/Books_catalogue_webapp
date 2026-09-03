@@ -35,6 +35,17 @@ ALLOWED_HOSTS = [
     h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if h.strip()
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()
+]
+
+# Railway (и повечето PaaS) терминират TLS на edge-а и проксират към Django
+# през plain HTTP — без това Django би мислил, че всяка заявка е несигурна.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
 
 # Application definition
 
@@ -54,6 +65,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -126,12 +138,24 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Media (качени файлове) — засега на локалния диск; в production корицине
-# идват от Cloudflare R2 (виж CLAUDE.md), но за local dev достатъчно е
-# стандартното Django файлово хранилище.
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
+# Media (качени файлове, напр. корици). Локално — папка в проекта. В
+# production (Railway) MEDIA_ROOT сочи към mount path-а на прикачен
+# Railway Volume (диск-ът на самия service е ephemeral — изчезва при всеки
+# redeploy), зададен през env var. Cloudflare R2 (виж CLAUDE.md) е
+# по-solid дългосрочно решение, но Volume е достатъчен за начало.
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = Path(os.environ.get('MEDIA_ROOT') or (BASE_DIR / 'media'))
 
 
 # Email
