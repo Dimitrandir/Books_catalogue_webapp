@@ -152,10 +152,16 @@ STORAGES = {
 # Media (качени файлове, напр. корици). Локално — папка в проекта. В
 # production (Railway) MEDIA_ROOT сочи към mount path-а на прикачен
 # Railway Volume (диск-ът на самия service е ephemeral — изчезва при всеки
-# redeploy), зададен през env var. Cloudflare R2 (виж CLAUDE.md) е
-# по-solid дългосрочно решение, но Volume е достатъчен за начало.
+# redeploy). RAILWAY_VOLUME_MOUNT_PATH се задава автоматично от Railway
+# при прикачен volume (без ръчна настройка); MEDIA_ROOT позволява explicit
+# override ако някога потрябва различен под-път. Cloudflare R2 (виж
+# CLAUDE.md) е по-solid дългосрочно решение, но Volume е достатъчен засега.
 MEDIA_URL = 'media/'
-MEDIA_ROOT = Path(os.environ.get('MEDIA_ROOT') or (BASE_DIR / 'media'))
+MEDIA_ROOT = Path(
+    os.environ.get('MEDIA_ROOT')
+    or os.environ.get('RAILWAY_VOLUME_MOUNT_PATH')
+    or (BASE_DIR / 'media')
+)
 
 
 # Email
