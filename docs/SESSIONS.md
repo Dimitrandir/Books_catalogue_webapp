@@ -777,3 +777,68 @@
 - Warning-ът сравнява само по заглавие (не и автор) — приемлив компромис
   по избор на потребителя, но има шанс за false positive при чиста
   случайност на заглавието.
+
+---
+
+## 2026-09-03
+
+**Свършено:**
+- Потребителят реши, че приложението е готово за точка 8 от плана:
+  деплой. Уточнени 3 решения преди да пипаме нещо извън локалния код:
+  1. GitHub repo — потребителят ще създаде празно repo ръчно и ще даде
+     линка (вместо `gh` CLI login flow, което не е инсталирано).
+  2. Cover storage в production — **Railway Volume** засега (просто
+     mount в dashboard-а), R2 остава за по-late, ако потрябва.
+  3. Railway account — потребителят ще влезе през GitHub login.
+- Направена production-readiness подготовка в кода:
+  - `whitenoise` за static files (Django admin CSS/JS не се сервира от
+    самия Django при `DEBUG=False`) — `STATIC_ROOT` +
+    `CompressedManifestStaticFilesStorage` през новия Django `STORAGES`
+    setting.
+  - `SECURE_PROXY_SSL_HEADER` (Railway терминира TLS на edge, проксира
+    plain HTTP навътре), `SECURE_SSL_REDIRECT`/`SESSION_COOKIE_SECURE`/
+    `CSRF_COOKIE_SECURE` вързани към `DEBUG`, нов `CSRF_TRUSTED_ORIGINS`
+    env-driven setting.
+  - `MEDIA_ROOT` вече чете `MEDIA_ROOT` env var (fallback чрез `or`, не
+    dict `.get(key, default)` — важно, защото празен-но-присъстващ env
+    var connect се третира различно от липсващ; `.get` с default само
+    покрива липсващия случай) — в production ще сочи към mount path-а на
+    прикачен Railway Volume, локално default си остава `BASE_DIR/media`.
+  - `gunicorn` + `whitenoise` добавени в `requirements.txt`.
+  - Нов `Procfile`: единен `web` процес прави
+    `migrate --noinput && collectstatic --noinput && gunicorn ...` на
+    всеки boot — по-портативно от Heroku-style `release:` process type,
+    който Railway не поддържа сигурно.
+  - `.env`/`.env.example` обновени с новите vars.
+- Ръчно тествано локално: `manage.py check`, `collectstatic` (169 файла,
+  чисто), пълната Procfile команда под истински `gunicorn` с
+  `DEBUG=False` — HTTP 200 на `/` и `/admin/login/`, admin CSS се
+  сервира от whitenoise коректно, SSL redirect се задейства само без
+  `X-Forwarded-Proto` header (симулира точно Railway edge поведението).
+  Обикновен `manage.py runserver` (DEBUG=True) продължава да работи
+  непроменено.
+
+**Текущо състояние:**
+- Кодът е готов за деплой. Няма още git remote, няма Railway проект.
+  Чакаме от потребителя: (1) URL на празното GitHub repo, за да добавим
+  remote и push-нем; (2) достъп/потвърждение в Railway dashboard-а за
+  създаване на проект, Postgres plugin, Volume mount, и env vars.
+
+**Следваща стъпка:**
+1. Потребителят дава GitHub repo URL → добавяме remote, push-ваме
+   `master` branch.
+2. Създаване на Railway проект от GitHub repo (auto-deploy при всеки
+   push), Postgres plugin (нова production база — отделна от локалната
+   `family_library`), Volume mount за `MEDIA_ROOT`.
+3. Env vars в Railway dashboard-а: `DJANGO_SECRET_KEY` (нов, различен от
+   локалния), `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS` (Railway
+   домейна), `DJANGO_CSRF_TRUSTED_ORIGINS` (https://<домейн>),
+   `DATABASE_URL` (auto от Postgres plugin-а), `MEDIA_ROOT` (Volume mount
+   path), `ANTHROPIC_API_KEY`.
+4. След първия deploy: `createsuperuser` на production (през Railway's
+   run/shell функционалност).
+
+**Отворени въпроси / бележки:**
+- R2 остава документирано в `CLAUDE.md` като по-solid дългосрочен план
+  за cover storage — Volume е съзнателен bootstrap избор, не финално
+  решение.
