@@ -72,6 +72,11 @@
             --placeholder-bg: #2a3134;
             --popup-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
         }
+        /* color-scheme следва системата по подразбиране (light dark), но
+           native контроли (input/select/textarea, scrollbar) трябва да
+           следват explicit toggle избора ни, не само системата. */
+        :root[data-theme="light"] { color-scheme: light; }
+        :root[data-theme="dark"] { color-scheme: dark; }
         * { box-sizing: border-box; }
         body {
             font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
