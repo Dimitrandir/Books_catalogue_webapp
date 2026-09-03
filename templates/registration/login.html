@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Вход — Семейна библиотека{% endblock %}
+
+{% block content %}
+    <h1>Вход</h1>
+
+    <form method="post" class="entry-form" style="max-width: 320px;">
+        {% csrf_token %}
+        {% if form.errors %}
+            <p class="form-error">Грешно потребителско име или парола.</p>
+        {% endif %}
+        <p>
+            {{ form.username.label_tag }}
+            {{ form.username }}
+        </p>
+        <p>
+            {{ form.password.label_tag }}
+            {{ form.password }}
+        </p>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit">Влез</button>
+    </form>
+{% endblock %}

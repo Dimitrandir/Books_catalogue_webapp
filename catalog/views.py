@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -24,6 +25,7 @@ def _on_loan_copies():
     return Copy.objects.filter(id__in=open_loans)
 
 
+@login_required
 def book_list(request):
     query = request.GET.get('q', '').strip()
     genre_id = request.GET.get('genre', '')
@@ -84,6 +86,7 @@ def book_list(request):
     return render(request, template, context)
 
 
+@login_required
 def book_detail(request, pk):
     book = get_object_or_404(
         Book.objects.select_related('publisher').prefetch_related(
@@ -99,6 +102,7 @@ def book_detail(request, pk):
     return render(request, 'catalog/book_detail.html', {'book': book, 'lend_form': lend_form})
 
 
+@login_required
 def book_create(request):
     if request.method == 'POST':
         book_form = BookForm(request.POST, request.FILES)
@@ -126,6 +130,7 @@ def book_create(request):
     return render(request, 'catalog/book_form.html', context)
 
 
+@login_required
 def book_edit(request, pk):
     book = get_object_or_404(Book, pk=pk)
     if request.method == 'POST':
@@ -149,6 +154,7 @@ def book_edit(request, pk):
     return render(request, 'catalog/book_form.html', context)
 
 
+@login_required
 @require_POST
 def book_delete(request, pk):
     book = get_object_or_404(Book, pk=pk)
@@ -156,6 +162,7 @@ def book_delete(request, pk):
     return redirect('catalog:book_list')
 
 
+@login_required
 def copy_add(request, book_pk):
     book = get_object_or_404(Book, pk=book_pk)
     if request.method == 'POST':
@@ -170,6 +177,7 @@ def copy_add(request, book_pk):
     return render(request, 'catalog/copy_form.html', {'book': book, 'copy_form': copy_form})
 
 
+@login_required
 def title_check(request):
     title = _normalize_name(request.GET.get('title', ''))
     exclude_pk = request.GET.get('exclude', '')
@@ -207,24 +215,29 @@ def _tag_quick_create(request, model):
     return JsonResponse({'id': item.pk, 'name': item.name})
 
 
+@login_required
 def author_search(request):
     return _tag_search(request, Author, 'catalog:author_quick_create')
 
 
+@login_required
 def genre_search(request):
     return _tag_search(request, Genre, 'catalog:genre_quick_create')
 
 
+@login_required
 @require_POST
 def author_quick_create(request):
     return _tag_quick_create(request, Author)
 
 
+@login_required
 @require_POST
 def genre_quick_create(request):
     return _tag_quick_create(request, Genre)
 
 
+@login_required
 @require_POST
 def publisher_quick_create(request):
     return _tag_quick_create(request, Publisher)

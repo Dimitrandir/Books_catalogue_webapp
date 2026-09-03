@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -17,6 +18,7 @@ def _copy_with_current_loan(copy_id):
     return copy
 
 
+@login_required
 @require_POST
 def lend_copy(request, copy_id):
     copy = _copy_with_current_loan(copy_id)
@@ -35,6 +37,7 @@ def lend_copy(request, copy_id):
     return render(request, 'catalog/_copy_row.html', {'copy': copy, 'lend_form': lend_form})
 
 
+@login_required
 @require_POST
 def return_loan(request, loan_id):
     loan = get_object_or_404(Loan, pk=loan_id, date_returned__isnull=True)

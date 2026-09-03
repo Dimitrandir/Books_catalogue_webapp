@@ -29,6 +29,30 @@
             font-weight: 600;
             font-size: 1.1rem;
         }
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .header-user {
+            font-size: 0.85rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        .logout-form { display: inline; }
+        .header-user button {
+            background: none;
+            border: none;
+            color: white;
+            font-weight: 400;
+            text-decoration: underline;
+            font-size: inherit;
+            font-family: inherit;
+            cursor: pointer;
+            padding: 0;
+        }
         main {
             max-width: 1100px;
             margin: 0 auto;
@@ -317,8 +341,17 @@
     </style>
 </head>
 <body>
-    <header>
+    <header class="site-header">
         <a href="{% url 'catalog:book_list' %}">📚 Семейна библиотека</a>
+        {% if user.is_authenticated %}
+            <span class="header-user">
+                {{ user.get_username }} ·
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit">изход</button>
+                </form>
+            </span>
+        {% endif %}
     </header>
     <main>
         {% block content %}{% endblock %}

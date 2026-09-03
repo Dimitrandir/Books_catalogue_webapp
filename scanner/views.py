@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
@@ -15,6 +16,7 @@ def _match_or_create(model, raw_name):
     return {'id': item.pk, 'name': item.name}
 
 
+@login_required
 @require_POST
 def scan_cover(request):
     photo = request.FILES.get('photo')
