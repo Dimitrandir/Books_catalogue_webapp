@@ -170,6 +170,18 @@ def copy_add(request, book_pk):
     return render(request, 'catalog/copy_form.html', {'book': book, 'copy_form': copy_form})
 
 
+def title_check(request):
+    title = _normalize_name(request.GET.get('title', ''))
+    exclude_pk = request.GET.get('exclude', '')
+    match = None
+    if title:
+        qs = Book.objects.filter(title__iexact=title)
+        if exclude_pk:
+            qs = qs.exclude(pk=exclude_pk)
+        match = qs.first()
+    return render(request, 'catalog/_title_check.html', {'match': match})
+
+
 def _normalize_name(raw):
     return ' '.join(raw.split())
 

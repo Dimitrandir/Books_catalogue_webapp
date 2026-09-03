@@ -1,0 +1,7 @@
+{% if match %}
+    <div class="title-warning">
+        ⚠ Вече има книга „{{ match.title }}“ —
+        <a href="{% url 'catalog:book_detail' match.pk %}">виж</a> ·
+        <a href="{% url 'catalog:copy_add' match.pk %}">добави екземпляр вместо това</a>
+    </div>
+{% endif %}

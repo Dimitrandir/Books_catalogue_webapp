@@ -23,10 +23,12 @@
             {{ book_form.cover_image.errors }}
         </p>
 
+        <input type="hidden" name="exclude" value="{{ book.pk|default_if_none:'' }}">
         <p>
             {{ book_form.title.label_tag }}
             {{ book_form.title }}
             {{ book_form.title.errors }}
+            <div id="title-check-result"></div>
         </p>
 
         <p>
