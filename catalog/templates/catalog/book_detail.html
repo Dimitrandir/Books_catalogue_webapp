@@ -7,7 +7,14 @@
 
     <div class="page-header">
         <h1>{{ book.title }}</h1>
-        <a class="button-link" href="{% url 'catalog:book_edit' book.pk %}">✎ Редактирай</a>
+        <div class="header-actions">
+            <a class="button-link" href="{% url 'catalog:book_edit' book.pk %}">✎ Редактирай</a>
+            <form method="post" action="{% url 'catalog:book_delete' book.pk %}"
+                  onsubmit="return confirm('Сигурен ли си, че искаш да изтриеш „{{ book.title|escapejs }}“? Ще се изтрият и всички екземпляри и история на заемания.');">
+                {% csrf_token %}
+                <button type="submit" class="button-link button-danger">🗑 Изтрий</button>
+            </form>
+        </div>
     </div>
     <p class="authors">{{ book.authors.all|join:", " }}{% if book.year %} · {{ book.year }}{% endif %}{% if book.publisher %} · {{ book.publisher }}{% endif %}</p>
     <p>{% for genre in book.genres.all %}<span class="badge available">{{ genre.name }}</span> {% endfor %}</p>

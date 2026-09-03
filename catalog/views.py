@@ -149,6 +149,13 @@ def book_edit(request, pk):
     return render(request, 'catalog/book_form.html', context)
 
 
+@require_POST
+def book_delete(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    book.delete()
+    return redirect('catalog:book_list')
+
+
 def _normalize_name(raw):
     return ' '.join(raw.split())
 
