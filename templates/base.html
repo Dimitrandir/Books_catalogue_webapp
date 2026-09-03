@@ -3,20 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
     <title>{% block title %}Семейна библиотека{% endblock %}</title>
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <style>
         :root {
-            --border: #ddd;
+            color-scheme: light dark;
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --surface-alt: #f0f0f0;
+            --text: #1a1a1a;
             --muted: #666;
+            --border: #ddd;
             --accent: #2f5d50;
+            --danger: #a13b3b;
+            --danger-bg: #fbeaea;
+            --available-bg: #e3f3ea;
+            --available-text: #1e6b45;
+            --warning-bg: #fff6e0;
+            --warning-border: #e0c264;
+            --warning-text: #7a5c00;
+            --placeholder-bg: #eee;
+            --popup-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #15191b;
+                --surface: #1e2426;
+                --surface-alt: #2a3134;
+                --text: #e6e8e6;
+                --muted: #9aa39d;
+                --border: #343b3d;
+                --accent: #3fae8a;
+                --danger: #e08585;
+                --danger-bg: #4a2626;
+                --available-bg: #1f3a30;
+                --available-text: #7cd9ae;
+                --warning-bg: #3d3419;
+                --warning-border: #8a6f2a;
+                --warning-text: #e0c264;
+                --placeholder-bg: #2a3134;
+                --popup-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+            }
         }
         * { box-sizing: border-box; }
         body {
             font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            color: #1a1a1a;
-            background: #fafafa;
+            color: var(--text);
+            background: var(--bg);
         }
         header {
             background: var(--accent);
@@ -64,7 +99,7 @@
             gap: 0.5rem;
             margin-bottom: 1.5rem;
             padding: 1rem;
-            background: white;
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 8px;
         }
@@ -88,7 +123,7 @@
             gap: 1rem;
         }
         .book-card {
-            background: white;
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 0.75rem;
@@ -102,7 +137,7 @@
             aspect-ratio: 2 / 3;
             object-fit: cover;
             border-radius: 4px;
-            background: #eee;
+            background: var(--placeholder-bg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -119,8 +154,8 @@
             border-radius: 999px;
             margin-top: 0.35rem;
         }
-        .badge.available { background: #e3f3ea; color: #1e6b45; }
-        .badge.on-loan { background: #fbeaea; color: #a13b3b; }
+        .badge.available { background: var(--available-bg); color: var(--available-text); }
+        .badge.on-loan { background: var(--danger-bg); color: var(--danger); }
         .pagination { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
         .pagination a, .pagination span {
             padding: 0.3rem 0.7rem;
@@ -151,17 +186,17 @@
             border: none;
             cursor: pointer;
         }
-        .form-error { color: #a13b3b; font-size: 0.8rem; width: 100%; }
+        .form-error { color: var(--danger); font-size: 0.8rem; width: 100%; }
         .title-warning {
-            background: #fff6e0;
-            border: 1px solid #e0c264;
-            color: #7a5c00;
+            background: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            color: var(--warning-text);
             border-radius: 4px;
             padding: 0.4rem 0.6rem;
             font-size: 0.85rem;
             margin-top: 0.3rem;
         }
-        .title-warning a { color: #7a5c00; }
+        .title-warning a { color: var(--warning-text); }
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -183,8 +218,8 @@
             font-size: 1rem;
             font-family: inherit;
         }
-        .button-danger { background: #a13b3b; }
-        .entry-form { max-width: 500px; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+        .button-danger { background: var(--danger); }
+        .entry-form { max-width: 500px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
         .entry-form p { margin: 0 0 0.9rem; display: flex; flex-direction: column; gap: 0.25rem; }
         .entry-form label { font-weight: 600; font-size: 0.9rem; }
         .entry-form input, .entry-form select, .entry-form textarea {
@@ -203,7 +238,7 @@
             cursor: pointer;
             font-weight: 600;
         }
-        .errorlist { color: #a13b3b; font-size: 0.85rem; padding-left: 1rem; margin: 0.2rem 0; }
+        .errorlist { color: var(--danger); font-size: 0.85rem; padding-left: 1rem; margin: 0.2rem 0; }
 
         .tag-picker { position: relative; }
         .tag-picker .chips {
@@ -243,22 +278,22 @@
             padding: 0.25rem 0.6rem;
             border: 1px solid var(--border);
             border-radius: 999px;
-            background: white;
+            background: var(--surface);
             cursor: pointer;
             font-size: 0.85rem;
         }
-        .tag-result:hover { background: #f0f0f0; }
+        .tag-result:hover { background: var(--surface-alt); }
         .tag-empty { color: var(--muted); font-size: 0.8rem; }
         .tag-create {
             padding: 0.25rem 0.6rem;
             border: 1px dashed var(--accent);
             border-radius: 999px;
-            background: white;
+            background: var(--surface);
             color: var(--accent);
             cursor: pointer;
             font-size: 0.85rem;
         }
-        .tag-create:hover { background: #e3f3ea; }
+        .tag-create:hover { background: var(--available-bg); }
 
         .inline-add-select { display: flex; gap: 0.35rem; align-items: center; }
         .inline-add-select select { flex: 1; }
@@ -268,13 +303,13 @@
             height: 2rem;
             border: 1px dashed var(--accent);
             border-radius: 4px;
-            background: white;
+            background: var(--surface);
             color: var(--accent);
             font-size: 1.1rem;
             line-height: 1;
             cursor: pointer;
         }
-        .inline-add-btn:hover { background: #e3f3ea; }
+        .inline-add-btn:hover { background: var(--available-bg); }
 
         .scan-btn {
             display: block;
@@ -282,26 +317,26 @@
             padding: 0.35rem 0.8rem;
             border: 1px dashed var(--accent);
             border-radius: 4px;
-            background: white;
+            background: var(--surface);
             color: var(--accent);
             cursor: pointer;
             font-size: 0.85rem;
         }
-        .scan-btn:hover { background: #e3f3ea; }
+        .scan-btn:hover { background: var(--available-bg); }
         .scan-btn:disabled { opacity: 0.6; cursor: default; }
 
         .date-field { position: relative; display: inline-block; }
-        .date-input { cursor: pointer; background: white; width: 8.5rem; }
+        .date-input { cursor: pointer; background: var(--surface); color: var(--text); width: 8.5rem; }
         .date-popup {
             position: absolute;
             top: calc(100% + 4px);
             left: 0;
             z-index: 20;
-            background: white;
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 0.5rem;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--popup-shadow);
             width: 220px;
         }
         .date-popup-header {
@@ -335,7 +370,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        .date-popup-day:hover { background: #f0f0f0; }
+        .date-popup-day:hover { background: var(--surface-alt); }
         .date-popup-day.is-today { font-weight: 700; color: var(--accent); }
         .date-popup-day.is-selected { background: var(--accent); color: white; }
     </style>
