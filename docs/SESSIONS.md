@@ -914,3 +914,58 @@
   не е под Settings) — добра практика занапред: проверявай Railway docs
   директно вместо да разчиташ на общи PaaS предположения, когато напътстваш
   потребителя стъпка по стъпка в техния UI.
+
+---
+
+## 2026-09-03 (продължение 2)
+
+**Свършено:**
+- Потребителят потвърди, че всичко в production работи (login, admin,
+  всичко деплойнато). Уточнихме, че `createsuperuser` дотогава беше
+  пускан само локално, не на production Railway базата — дадени
+  инструкции през Railway's Console tab (`python manage.py createsuperuser`).
+  Потребителят потвърди "стана".
+- Потребителят предложи dark mode — видял е добре изглеждащ резултат от
+  browser-forced dark mode в Opera на телефона и поиска истински такъв
+  вместо да разчитаме на heuristic инверсия.
+- Целият `templates/base.html` премина tokenization: всички hardcoded
+  цветове (background: white/#f0f0f0/#eee, badge/warning/danger hex
+  стойности) заменени с CSS custom properties. Светла палитра —
+  непроменена (същите стойности, само именувани). Тъмна палитра — нов
+  ръчно подбран набор, включително освежен `--accent` (#2f5d50 →
+  #3fae8a) за контраст като текст/бутон на тъмен фон. Активира се през
+  `@media (prefers-color-scheme: dark)` (следва системната тема, не
+  ръчен toggle — по избор за простота). Добавен `<meta name="color-scheme"
+  content="light dark">` за native form контроли (select dropdown-и).
+- Ръчно тествано през `getComputedStyle()` в браузъра (screenshot
+  инструментът не работеше стабилно в тази среда — timeout на "Browser
+  pane not displayed") — body/header/book-card/filters/badge цветове
+  потвърдени точни в двата режима; light mode потвърден 0 регресия.
+
+**Текущо състояние:**
+- Приложението поддържа истински light/dark theming. Commit `ba67146`
+  (dark mode базата) е push-нат от потребителя през PyCharm.
+- Потребителят поиска и ръчен toggle (не само system-following) —
+  добавен 🌙/☀️ бутон в header-а (commit `cd5adb4`):
+  - CSS override слой: `:root[data-theme="dark"]` печели над media
+    query-то; `:root:not([data-theme="light"])` вътре в
+    `@media (prefers-color-scheme: dark)` гарантира explicit "light"
+    печели дори при system dark. Работи в двете посоки.
+  - Избора се пази в `localStorage`; малък inline script в `<head>`
+    (преди `<style>`) го прилага веднага, за да няма флаш на грешна тема
+    при зареждане.
+  - Ръчно тествано: default (system light) → 🌙 икона; клик → dark +
+    localStorage; презареждане → пази се без флаш; клик пак → light,
+    override печели дори при симулиран system dark (`resize_window
+    colorScheme=dark` → bodyBg остава светъл).
+  - Commit `cd5adb4` е локален, чака push.
+
+**Следваща стъпка:**
+- Потребителят push-ва `cd5adb4` → Railway auto-redeploy → визуална
+  проверка на dark mode + toggle бутона върху реално устройство.
+
+**Отворени въпроси / бележки:**
+- Screenshot tool-ът в тази Claude Code сесия периодично тайм-аутва с
+  "Browser pane is not displayed" — работна алтернатива е проверка през
+  `javascript_tool` + `getComputedStyle()`, което е дори по-прецизно за
+  цветова верификация.
