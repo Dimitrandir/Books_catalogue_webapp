@@ -842,3 +842,75 @@
 - R2 остава документирано в `CLAUDE.md` като по-solid дългосрочен план
   за cover storage — Volume е съзнателен bootstrap избор, не финално
   решение.
+
+---
+
+## 2026-09-03 (продължение)
+
+**Свършено:**
+- Потребителят push-на ръчно през PyCharm (моят Bash push нямаше
+  credentials за GitHub — очаквано) и деплойна успешно в Railway.
+  Хванахме и оправихме на живо 3 production проблема, докато вървяхме
+  през Railway dashboard-а стъпка по стъпка:
+  1. `KeyError: 'DJANGO_SECRET_KEY'` (crash loop) — липсващи env vars в
+     Railway; дадени точните стойности (нов генериран secret key, а не
+     локалния).
+  2. "Волюмс" секция не съществуваше в Settings sidebar-а на service-а
+     (моето първоначално упътване беше грешно) — оказа се, че Railway
+     Volumes се създават през Command Palette (Ctrl+K) или десен клик на
+     project canvas-а, не през Settings. Проверено в Railway-йната
+     документация вместо да гадая повторно.
+  3. HTTP 400 "Bad Request" на живия домейн — `DJANGO_ALLOWED_HOSTS`
+     съдържаше буквално `"DJANGO_ALLOWED_HOSTS=bc-webapp.up.railway.app"`
+     (име на променливата случайно вътре в стойността, copy-paste
+     артефакт). Оправено.
+  - Направено и малко code подобрение: `MEDIA_ROOT` вече auto-detect-ва
+    Railway-йния `RAILWAY_VOLUME_MOUNT_PATH` env var (Railway го задава
+    сам при прикачен volume) — потребителят вече не трябва ръчно да
+    дублира mount path-а в отделен `MEDIA_ROOT` var.
+  - **Деплойментът е успешен и живо на `bc-webapp.up.railway.app`.**
+- Потребителят зададе следващ въпрос: приложението е публично достъпно за
+  всеки с линка — трябва ли login? Обсъдено накратко (Django's вграден
+  auth vs. custom gate) — потребителят избра **индивидуални акаунти за
+  всеки член на семейството** през вградения Django auth.
+- Имплементирано: `@login_required` на всички views в `catalog`/`loans`/
+  `scanner` (включително `scan_cover`, който вика платно Claude API —
+  особено важно да е защитен). `LOGIN_URL`/`LOGIN_REDIRECT_URL`/
+  `LOGOUT_REDIRECT_URL` в settings, `LoginView`/`LogoutView` в
+  `config/urls.py`, нов `templates/registration/login.html` в стила на
+  приложението, header показва текущия user + "изход".
+  - Открит и оправен бъг по време на тестването: logout линкът беше
+    обикновен `<a href>` (GET), но Django 4.1+ `LogoutView` изисква POST
+    — сменено на POST форма (същия модел като `book_delete` по-рано).
+  - Допълнително забелязан и оправен пропуск, докато бях в
+    `config/urls.py`: media файловете изобщо не се сервираха при
+    `DEBUG=False` (`static()` helper-ът беше wrapped в `if settings.DEBUG`) —
+    critical bug за production, тъй като нямаме CDN пред media (само
+    whitenoise за static). Оправено да сервира безусловно.
+  - Ръчно тествано: неавторизиран достъп → 302 към login (GET) / 403 CSRF
+    (POST); login с тестов user → редирект + username в header; logout →
+    блокира достъпа отново. Тестовият user изтрит.
+- Committнато локално (`4583706`), чака push от потребителя през PyCharm.
+
+**Текущо състояние:**
+- Приложението е **живо в production** на Railway
+  (`bc-webapp.up.railway.app`), с работеща Postgres база, Volume за
+  media, и всички Django env vars правилно зададени.
+- Auth промените са закомитнати локално, но все още не са push-нати/
+  deploy-нати към production — следващият push ще активира login
+  изискването там.
+
+**Следваща стъпка:**
+- Потребителят push-ва последния commit (`4583706`) през PyCharm →
+  Railway auto-redeploy.
+- След deploy: създаване на Django `User` акаунти за всеки член на
+  семейството през `/admin/` (вече ще изисква login и там, но
+  superuser-ът вече съществува).
+- Verify: живия сайт вече изисква login, admin login работи, cover
+  upload persist-ва между redeploys (Volume test).
+
+**Отворени въпроси / бележки:**
+- Railway dashboard-ната навигация се промени леко от очакваното (Volumes
+  не е под Settings) — добра практика занапред: проверявай Railway docs
+  директно вместо да разчиташ на общи PaaS предположения, когато напътстваш
+  потребителя стъпка по стъпка в техния UI.
